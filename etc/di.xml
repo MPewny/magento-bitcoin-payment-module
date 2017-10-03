@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2017 INPAY S.A.Permission is hereby granted, free of charge, to any person obtaining a copyof this software and associated documentation files (the "Software"), to dealin the Software without restriction, including without limitation the rightsto use, copy, modify, merge, publish, distribute, sublicense, and/or sellcopies of the Software, and to permit persons to whom the Software isfurnished to do so, subject to the following conditions:The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS ORIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  ~ @package InPay_InPay
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Payment Method Facade configuration -->
+    <virtualType name="InPayFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">\InPay\InPay\Model\Ui\ConfigProvider::CODE</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">InPay\InPay\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">InPayValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">InPayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Configuration reader -->
+    <virtualType name="InPayConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">\InPay\InPay\Model\Ui\ConfigProvider::CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="InPayLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">InPayLogger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">InPay\InPay\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Logger, initialized with InPayConfig -->
+    <virtualType name="InPayPaymentLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="logger" xsi:type="object">InPayLogger</argument>
+            <argument name="config" xsi:type="object">InPayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="InPay\InPay\Controller\Payment\Ipn">
+        <arguments>
+            <argument name="logger" xsi:type="object">InPayLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="InPay\InPay\Gateway\Request\AuthorizationRequest">
+        <arguments>
+            <argument name="logger" xsi:type="object">InPayLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="\InPay\InPay\Gateway\Validator\ResponseCodeValidator">
+        <arguments>
+            <argument name="logger" xsi:type="object">InPayLogger</argument>
+        </arguments>
+    </type>
+
+    <!-- Commands infrastructure -->
+    <virtualType name="InPayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">InPayAuthorizeCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorize command -->
+    <virtualType name="InPayAuthorizeCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">InPayAuthorizationRequest</argument>
+            <argument name="handler" xsi:type="object">InPay\InPay\Gateway\Response\RedirectHandler</argument>
+            <argument name="transferFactory" xsi:type="object">InPay\InPay\Gateway\Http\TransferFactory</argument>
+            <argument name="validator" xsi:type="object">InPay\InPay\Gateway\Validator\ResponseCodeValidator</argument>
+            <argument name="client" xsi:type="object">Magento\Payment\Gateway\Http\Client\Zend</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Authorization Request -->
+    <virtualType name="InPayAuthorizationRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="transaction" xsi:type="string">InPay\InPay\Gateway\Request\AuthorizationRequest</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="InPay\InPay\Gateway\Request\AuthorizationRequest">
+        <arguments>
+            <argument name="config" xsi:type="object">InPayConfig</argument>
+        </arguments>
+    </type>
+
+    <!-- Value handlers infrastructure -->
+    <virtualType name="InPayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">InPayConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="InPayConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">InPayConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="InPay\InPay\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">InPayConfig</argument>
+        </arguments>
+    </type>
+
+</config>

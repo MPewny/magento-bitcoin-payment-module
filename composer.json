@@ -1,0 +1,25 @@
+{
+  "name": "inpay/inpay",
+  "description": "Integration with InPay payment gateway",
+  "require": {
+    "magento/module-sales": "100.0.*|100.1.*",
+    "magento/module-checkout": "100.0.*|100.1.*",
+    "magento/module-payment": "100.0.*|100.1.*",
+    "magento/framework": "100.0.*|100.1.*",
+    "magento/magento-composer-installer": "100.0.*|100.1.*"
+  },
+  "type": "magento2-module",
+  "version": "2.0.0",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "InPay\\InPay\\": ""
+    }
+  }
+}
