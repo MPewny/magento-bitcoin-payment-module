@@ -32,7 +32,7 @@ $ php bin/magento module:enable InPay_InPay
 * In Magento Admin Panel go to 
 
 ```
-Stores -> Configuration -> Sales -> "Payment Methods" -> "InPat Gateway"
+Stores -> Configuration -> Sales -> "Payment Methods" -> "InPay Gateway"
 ```
 
 * Set values for API key and API secret and change Enabled to Yes
